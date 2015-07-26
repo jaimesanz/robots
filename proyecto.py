@@ -115,8 +115,7 @@ def calcWholeBOVW(dirPath, codebook):
         descriptors.append(computeBOVW(imagePath, codebook))
         print("Imagen: " + imagePath + " lista!")
 
-    return descriptors
-
+    return descriptor
 
 ####################
 #This recieves two different arrays of BOVW an generates a .txt named fileName
@@ -180,14 +179,11 @@ def calcBOVW():
 
     return None
 
-
-
 def parse_the_thing():
     sofaDescriptors = loadFromFile("sofaBOVW.p")
 
     parseAsSVMTrain(sofaDescriptors, "sofaTrain.txt")
 
     # esto etrega un txt el cual se le da como input al svm para entrenarlo
-
 
 parse_the_thing()
