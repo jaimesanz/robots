@@ -2,4 +2,7 @@ import os
 
 path = ""
 
-os.system("svm_learn.exe -t " + str(3) + " -c " + str(10.22) +  " " + path +  "sofaTrain.txt "+path + "sofa_model.txt")
+kernel = 3
+tradeoff = 10.22
+
+os.system("svm_learn.exe -t " + str(kernel) + " -c " + str(tradeoff) +  " " + path +  "sofaTrain.txt "+path + "sofa_model.txt")
