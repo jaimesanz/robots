@@ -1,8 +1,14 @@
 import os
 
-path = ""
+# path = r"C:\Users\Jaime Sanz\Documents\GitHub\robots\ "
+# print path
+path = os.getcwd()
 
-kernel = 3
+print os.getcwd()
+
+
+kernel = 2
 tradeoff = 10.22
+gamma = 0.0078125
 
-os.system("svm_learn.exe -t " + str(kernel) + " -c " + str(tradeoff) +  " " + path +  "sofaTrain.txt "+path + "sofa_model.txt")
+os.system("svm_learn.exe -t " + str(kernel) + " -g " + str(gamma) +  " " + path +  "sofaTrain.txt "+path + "sofa_model.txt")
