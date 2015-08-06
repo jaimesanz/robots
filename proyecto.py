@@ -38,7 +38,6 @@ def calcWholeSURF(dirPath):
         factor = 400.0/w
         image = cv2.resize(image, (0,0), fx=factor, fy=factor)
 
-
         # exit(0)
         descriptors.append(calcSURF(image))
 
@@ -138,8 +137,7 @@ def parseAsSVMTrain(goodClass, fileName):
 
 #############################
 # framePath = "D:\\BCIV\\Tarea2\\Imagenes\\prisma.dcc.uchile.cl\\CC5204\\Pascal_VOC_2007\\imagenes\\dog_train"
-framePath = "C:\\Users\\Jaime Sanz\\Documents\\GitHub\\robots\\sofas"
-
+framePath = "D:\\Mis Documentos\\Material U\\Robotica_Movil\\Proyecto\\robots-master\\robots-master\\offices_part2\\sofas - copia"
 
 def run():
     #Selects all the files in the directory
@@ -151,11 +149,21 @@ def run():
 
     return 0
 
+def calcDesc():
+    sofa_descriptors = calcWholeSURF(framePath)
+    print("All the descriptor computed!")
+
+    print(sofa_descriptors.shape)
+    
+    storeInFile(sofa_descriptors, "sofa_descriptors.p")
+    print("Stored in file!")
+
+    return sofa_descriptors
+	
 def calcCentroids():
     sofa_descriptors = calcWholeSURF(framePath)
     print("All the descriptor computed!")
 
-    print(sofa_descriptors)
     print(sofa_descriptors.shape)
 
     nbOfClusters = int(math.sqrt(len(sofa_descriptors)))
@@ -186,4 +194,4 @@ def parse_the_thing():
 
     # esto etrega un txt el cual se le da como input al svm para entrenarlo
 
-parse_the_thing()
+calcDesc()
