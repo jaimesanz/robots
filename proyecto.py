@@ -198,8 +198,8 @@ def calcBOVW():
     return None
 
 def parse_the_thing():
-    sofaDescriptors = loadFromFile("sofaBOVW.p")
+    sofaDescriptors = loadFromFile("sofa_descriptors.p")
 
-    parseAsSVMTrain(sofaDescriptors, "sofaTrain.txt")
+    parseAsSVMTrain(sofaDescriptors, "sofaDescTrain.txt")
 	
-calcDescPlant()
+parse_the_thing()
