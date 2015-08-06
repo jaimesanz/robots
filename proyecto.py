@@ -19,30 +19,28 @@ def calcSURF(img):
 ####################
 #This calculates SIFT for a whole Directory only after doing a good sampling of the images
 def calcWholeSURF(dirPath):
-    #Selects all the files in the directory
-    images = [ img for img in listdir(dirPath) if isfile(join(dirPath,img)) ]
+	#Selects all the files in the directory
+	images = [ img for img in listdir(dirPath) if isfile(join(dirPath,img)) ]
 
-    #Sample the images
-    k = (8*len(images))/10 #Our sample has 100% of the images, we just didn't have enough complex equations
-    sample = randomSubset(images, len(images), k)
+	#Sample the images
+	k = (8*len(images))/10 #Our sample has 100% of the images, we just didn't have enough complex equations
+	sample = randomSubset(images, len(images), k)
 
-    descriptors = []
-    for img in sample:
-        print img
-        imagePath = dirPath + "\\" + str(img)
+	descriptors = []
+	for img in sample:
+		imagePath = dirPath + "\\" + str(img)
+		image = cv2.imread(imagePath)
+		
+		h,w,dontknow = image.shape
 
-        image = cv2.imread(imagePath)
-        
-        h,w,dontknow = image.shape
+		factor = 400.0/w
+		image = cv2.resize(image, (0,0), fx=factor, fy=factor)
 
-        factor = 400.0/w
-        image = cv2.resize(image, (0,0), fx=factor, fy=factor)
+		# exit(0)
+		descriptors.append(calcSURF(image))
 
-        # exit(0)
-        descriptors.append(calcSURF(image))
-
-    result = numpy.concatenate(descriptors)
-    return result
+	result = numpy.concatenate(descriptors)
+	return result
 
 #This is Fisher-Yates algorithm for a random subset, it runs in O(K), with K the length of the subset
 def randomSubset(a, N, K):
@@ -137,7 +135,8 @@ def parseAsSVMTrain(goodClass, fileName):
 
 #############################
 # framePath = "D:\\BCIV\\Tarea2\\Imagenes\\prisma.dcc.uchile.cl\\CC5204\\Pascal_VOC_2007\\imagenes\\dog_train"
-framePath = "D:\\Mis Documentos\\Material U\\Robotica_Movil\\Proyecto\\robots-master\\robots-master\\offices_part2\\sofas - copia"
+sofaframePath = "D:\\Mis Documentos\\Material U\\Robotica_Movil\\Proyecto\\robots-master\\robots-master\\offices_part2\\sofas - copia"
+plantframePath = "D:\\Mis Documentos\\Material U\\Robotica_Movil\\Proyecto\\robots-master\\robots-master\\offices_part2\\office plants"
 
 def run():
     #Selects all the files in the directory
@@ -149,8 +148,8 @@ def run():
 
     return 0
 
-def calcDesc():
-    sofa_descriptors = calcWholeSURF(framePath)
+def calcDescSofa():
+    sofa_descriptors = calcWholeSURF(sofaframePath)
     print("All the descriptor computed!")
 
     print(sofa_descriptors.shape)
@@ -159,6 +158,17 @@ def calcDesc():
     print("Stored in file!")
 
     return sofa_descriptors
+	
+def calcDescPlant():
+    plant_descriptors = calcWholeSURF(plantframePath)
+    print("All the descriptor computed!")
+
+    print(plant_descriptors.shape)
+    
+    storeInFile(plant_descriptors, "plants_descriptors.p")
+    print("Stored in file!")
+
+    return plant_descriptors
 	
 def calcCentroids():
     sofa_descriptors = calcWholeSURF(framePath)
@@ -191,7 +201,5 @@ def parse_the_thing():
     sofaDescriptors = loadFromFile("sofaBOVW.p")
 
     parseAsSVMTrain(sofaDescriptors, "sofaTrain.txt")
-
-    # esto etrega un txt el cual se le da como input al svm para entrenarlo
-
-calcDesc()
+	
+calcDescPlant()

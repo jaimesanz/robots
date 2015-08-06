@@ -10,7 +10,7 @@ def loadFromFile(fileName):
     return pickle.load(open(fileName, "rb"))
 
 def trainSVM():
-	descriptors = loadFromFile("sofa_descriptors.p")
+	descriptors = loadFromFile("plants_descriptors.p")
 	descriptors = [list(d) for d in descriptors]
 	print("Descriptores cargados!")
 	
@@ -20,7 +20,7 @@ def trainSVM():
 
 	prob = svm_problem(rx, descriptors)
 
-	param = svm_parameter()
+	param = svm_parameter('-q')
 	param.kernel_type = RBF
 	param.C = 10
 	param.svm_type = 2
