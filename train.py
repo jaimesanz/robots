@@ -9,8 +9,8 @@ def storeInFile(object, fileName):
 def loadFromFile(fileName):
     return pickle.load(open(fileName, "rb"))
 
-def trainSVM():
-	descriptors = loadFromFile("plants_descriptors.p")
+def trainSVM(nu):
+	descriptors = loadFromFile("sofa_descriptors.p")
 	descriptors = [list(d) for d in descriptors]
 	print("Descriptores cargados!")
 	
@@ -22,7 +22,7 @@ def trainSVM():
 
 	param = svm_parameter('-q')
 	param.kernel_type = RBF
-	param.C = 10
+	param.nu = nu
 	param.svm_type = 2
 
 	m=svm_train(prob, param)
@@ -30,9 +30,13 @@ def trainSVM():
 	return m
 	
 def main():
-	svm = trainSVM()
-	svm_save_model("vector_machine.model", svm)
+	nu = 0.2
 	
+	while nu <= 1:
+		svm = trainSVM(nu)
+		svm_save_model("vector_machine" + str(int(nu*10)) + ".model", svm)
+		print("Termine el de nu: " + str(nu))
+		nu += 0.2
 
 if __name__ == "__main__":
     main()
