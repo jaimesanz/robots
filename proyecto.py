@@ -1,5 +1,5 @@
 import cv2
-from os import listdir
+from os import listdir, walk
 from os.path import isfile, join
 import cPickle as pickle
 import random
@@ -16,16 +16,17 @@ def calcSURF(img):
     #The data is only stored in descriptors[1]
     return descriptors[1]
 
+
 ####################
 #This calculates SIFT for a whole Directory only after doing a good sampling of the images
-def calcWholeSURF(dirPath):
+def calcWholeSURF(dirPath, percentage):
 	#Selects all the files in the directory
 	images = [ img for img in listdir(dirPath) if isfile(join(dirPath,img)) ]
 
 	#Sample the images
-	k = (8*len(images))/10 #Our sample has 100% of the images, we just didn't have enough complex equations
+	k = len(images)*percentage/100
 	sample = randomSubset(images, len(images), k)
-
+	
 	descriptors = []
 	for img in sample:
 		imagePath = dirPath + "\\" + str(img)
@@ -41,7 +42,21 @@ def calcWholeSURF(dirPath):
 
 	result = numpy.concatenate(descriptors)
 	return result
-
+	
+def calcWholeSURF_dir(dirPath):	
+	directories = [x[0] for x in walk(dirPath)]
+	result = []
+	print "Iterando sobre directorios"
+	for d in directories[1:]:
+		if d == "D:\\Mis Documentos\\Material U\\Robotica_Movil\\Proyecto\\101_ObjectCategories\\sofas":
+			result.append(calcWholeSURF(d, 95))
+		else:
+			result.append(calcWholeSURF(d, 5))
+			
+	print "\nlisto con los directorios"
+	result_final = numpy.concatenate(result)
+	return result_final
+	
 #This is Fisher-Yates algorithm for a random subset, it runs in O(K), with K the length of the subset
 def randomSubset(a, N, K):
     for i in range(N-1, N-K-1, -1):
@@ -110,9 +125,27 @@ def calcWholeBOVW(dirPath, codebook):
     for img in images:
         imagePath = dirPath + "\\" + str(img)
         descriptors.append(computeBOVW(imagePath, codebook))
-        print("Imagen: " + imagePath + " lista!")
 
-    return descriptor
+    return descriptors
+	
+def calcWholeBOVW_dir(dirPath, codebook):	
+	directories = [x[0] for x in walk(dirPath)]
+	result = []
+	print "Iterando sobre directorios"
+	for d in directories[1:]:
+		if d == "D:\\Mis Documentos\\Material U\\Robotica_Movil\\Proyecto\\101_ObjectCategories\\sofas":
+			pass
+		else:
+			images = [ img for img in listdir(d) if isfile(join(d,img)) ]
+			k = len(images)*5/100
+			
+			rs = randomSubset(images, len(images), k)
+			for image in rs:
+				result.append(computeBOVW(image, codebook))
+			
+	print "\nlisto con los directorios"
+	result_final = numpy.concatenate(result)
+	return result_final
 
 ####################
 #This recieves two different arrays of BOVW an generates a .txt named fileName
@@ -137,6 +170,8 @@ def parseAsSVMTrain(goodClass, fileName):
 # framePath = "D:\\BCIV\\Tarea2\\Imagenes\\prisma.dcc.uchile.cl\\CC5204\\Pascal_VOC_2007\\imagenes\\dog_train"
 sofaframePath = "D:\\Mis Documentos\\Material U\\Robotica_Movil\\Proyecto\\robots-master\\robots-master\\offices_part2\\sofas - copia"
 plantframePath = "D:\\Mis Documentos\\Material U\\Robotica_Movil\\Proyecto\\robots-master\\robots-master\\offices_part2\\office plants"
+
+newFramePath = "D:\\Mis Documentos\\Material U\\Robotica_Movil\\Proyecto\\101_ObjectCategories"
 
 def run():
     #Selects all the files in the directory
@@ -170,30 +205,32 @@ def calcDescPlant():
 
     return plant_descriptors
 	
-def calcCentroids():
-    sofa_descriptors = calcWholeSURF(framePath)
+def calcCentroids(thisFramePath):
+    all_descriptors = calcWholeSURF_dir(thisFramePath)
     print("All the descriptor computed!")
 
-    print(sofa_descriptors.shape)
 
-    nbOfClusters = int(math.sqrt(len(sofa_descriptors)))
+	
+    print(all_descriptors.shape)
 
-    centroids = kMeans(sofa_descriptors, nbOfClusters)
+    nbOfClusters = int(math.sqrt(len(all_descriptors)))
+
+    centroids = kMeans(all_descriptors, nbOfClusters)
     print("Clusters computed!")
     
-    storeInFile(centroids, "clusters.p")
+    storeInFile(centroids, "clusters101.p")
     print("Stored in file!")
 
     return centroids
 
-def calcBOVW():
-    codebook = loadFromFile("clusters.p")
+def calcBOVW(codebookName, descriptorDir):
+    codebook = loadFromFile(codebookName)
     print("Codebook loaded!")
 
-    planeDescriptors = calcWholeBOVW(framePath, codebook)
-    print("Sofa descriptors computed")
-    storeInFile(planeDescriptors, "sofaBOVW.p")
-    print("Sofa stored in file!")
+    bovw = calcWholeBOVW(descriptorDir, codebook)
+    print("BOVW computed")
+    storeInFile(bovw, "sofaBOVW101.p")
+    print("Stored in file!")
 
     return None
 
@@ -201,5 +238,8 @@ def parse_the_thing():
     sofaDescriptors = loadFromFile("sofa_descriptors.p")
 
     parseAsSVMTrain(sofaDescriptors, "sofaDescTrain.txt")
+
 	
-parse_the_thing()
+	
+#calcCentroids(newFramePath)
+calcBOVW("clusters101.p", newFramePath + "\\sofas")
