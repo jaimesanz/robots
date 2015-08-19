@@ -16,7 +16,7 @@ def main():
 	print("Loading descriptors...")
 	frames = [ img for img in listdir(framePath) if isfile(join(framePath,img)) ]
 	print("Loading model...")
-	model = svm_load_model("vector_machine2.model")
+	model = svm_load_model("sofaTrainMC.txt.model")
 	print("All loaded!")
 	
 	masunos = 0
