@@ -12,7 +12,7 @@ def calcSURF(img):
     surf = cv2.SURF()
     keypoints = surf.detect(img,None)
     descriptors = surf.compute(img, keypoints)
-    
+
     #The data is only stored in descriptors[1]
     return descriptors[1]
 
@@ -26,12 +26,12 @@ def calcWholeSURF(dirPath, percentage):
 	#Sample the images
 	k = len(images)*percentage/100
 	sample = randomSubset(images, len(images), k)
-	
+
 	descriptors = []
 	for img in sample:
 		imagePath = dirPath + "\\" + str(img)
 		image = cv2.imread(imagePath)
-		
+
 		h,w,dontknow = image.shape
 
 		factor = 400.0/w
@@ -42,8 +42,8 @@ def calcWholeSURF(dirPath, percentage):
 
 	result = numpy.concatenate(descriptors)
 	return result
-	
-def calcWholeSURF_dir(dirPath):	
+
+def calcWholeSURF_dir(dirPath):
 	directories = [x[0] for x in walk(dirPath)]
 	result = []
 	print "Iterando sobre directorios"
@@ -52,11 +52,11 @@ def calcWholeSURF_dir(dirPath):
 			result.append(calcWholeSURF(d, 95))
 		else:
 			result.append(calcWholeSURF(d, 5))
-			
+
 	print "\nlisto con los directorios"
 	result_final = numpy.concatenate(result)
 	return result_final
-	
+
 #This is Fisher-Yates algorithm for a random subset, it runs in O(K), with K the length of the subset
 def randomSubset(a, N, K):
     for i in range(N-1, N-K-1, -1):
@@ -83,7 +83,6 @@ def loadFromFile(fileName):
 #This computes the final array of BOVW
 def computeBOVW(imagePath, codebook):
     image = cv2.imread(imagePath)
-    
     h,w,dontknow = image.shape
 
     factor = 400.0/w
@@ -99,10 +98,10 @@ def computeBOVW(imagePath, codebook):
         #For each one of the v-words in the codebook
         for word in codebook:
             distances.append(euclideanDistance(descriptor, word))
-            
+
         index = distances.index(numpy.amin(distances))
 
-        #We assign a +1 to the corresponding bin of the histogram, 
+        #We assign a +1 to the corresponding bin of the histogram,
         #which is the minimum EuclideanDistance between the centroid and the new SIFT descriptor
         histogram[index] = histogram[index] + 1
 
@@ -127,8 +126,8 @@ def calcWholeBOVW(dirPath, codebook):
         descriptors.append(computeBOVW(imagePath, codebook))
 
     return descriptors
-	
-def calcWholeBOVW_dir(dirPath, codebook):	
+
+def calcWholeBOVW_dir(dirPath, codebook):
 	directories = [x[0] for x in walk(dirPath)]
 	result = []
 	print "Iterando sobre directorios"
@@ -138,11 +137,13 @@ def calcWholeBOVW_dir(dirPath, codebook):
 		else:
 			images = [ img for img in listdir(d) if isfile(join(d,img)) ]
 			k = len(images)*5/100
-			
+
 			rs = randomSubset(images, len(images), k)
 			for image in rs:
-				result.append(computeBOVW(image, codebook))
-			
+				result.append(computeBOVW(d + "\\" + image, codebook))
+
+		print("Directorio: " + d + " listo!")
+
 	print "\nlisto con los directorios"
 	result_final = numpy.concatenate(result)
 	return result_final
@@ -188,36 +189,33 @@ def calcDescSofa():
     print("All the descriptor computed!")
 
     print(sofa_descriptors.shape)
-    
+
     storeInFile(sofa_descriptors, "sofa_descriptors.p")
     print("Stored in file!")
 
     return sofa_descriptors
-	
+
 def calcDescPlant():
     plant_descriptors = calcWholeSURF(plantframePath)
     print("All the descriptor computed!")
 
     print(plant_descriptors.shape)
-    
+
     storeInFile(plant_descriptors, "plants_descriptors.p")
     print("Stored in file!")
 
     return plant_descriptors
-	
+
 def calcCentroids(thisFramePath):
     all_descriptors = calcWholeSURF_dir(thisFramePath)
     print("All the descriptor computed!")
-
-
-	
     print(all_descriptors.shape)
 
     nbOfClusters = int(math.sqrt(len(all_descriptors)))
 
     centroids = kMeans(all_descriptors, nbOfClusters)
     print("Clusters computed!")
-    
+
     storeInFile(centroids, "clusters101.p")
     print("Stored in file!")
 
@@ -234,12 +232,22 @@ def calcBOVW(codebookName, descriptorDir):
 
     return None
 
+def calcBOVW2(codebookName, descriptorDir):
+    codebook = loadFromFile(codebookName)
+    print("Codebook loaded!")
+
+    bovw = calcWholeBOVW_dir(descriptorDir, codebook)
+    print("BOVW computed")
+    storeInFile(bovw, "no_sofaBOVW101.p")
+    print("Stored in file!")
+
+    return None
+
 def parse_the_thing():
     sofaDescriptors = loadFromFile("sofa_descriptors.p")
 
     parseAsSVMTrain(sofaDescriptors, "sofaDescTrain.txt")
 
-	
-	
 #calcCentroids(newFramePath)
-calcBOVW("clusters101.p", newFramePath + "\\sofas")
+calcBOVW2("clusters101.p", newFramePath)
+#calcBOVW("clusters101.p", newFramePath + "\\sofas")
