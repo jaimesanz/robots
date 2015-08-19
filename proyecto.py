@@ -145,8 +145,7 @@ def calcWholeBOVW_dir(dirPath, codebook):
 		print("Directorio: " + d + " listo!")
 
 	print "\nlisto con los directorios"
-	result_final = numpy.concatenate(result)
-	return result_final
+	return result
 
 ####################
 #This recieves two different arrays of BOVW an generates a .txt named fileName
@@ -166,6 +165,33 @@ def parseAsSVMTrain(goodClass, fileName):
     textFile.close()
 
     return 0
+	
+def parseAsSVMTrainMulticlass(goodClass, badClass, fileName):
+	textFile = open(fileName, "w")
+
+	#This adds good examples (images that belong to the class)
+	for good in goodClass:
+		textFile.write("1 ")
+		index = 1
+		for value in good:
+			if(value != 0):
+				textFile.write(str(index) + ":" + str(value) + " ")
+			index += 1
+		textFile.write("\n")
+
+	#This adds bad examples (images that don't belong to the class)
+	for bad in badClass:
+		textFile.write("-1 ")
+		index = 1
+		for value in bad:
+			if(value != 0):
+				textFile.write(str(index) + ":" + str(value) + " ")
+			index += 1
+		textFile.write("\n")
+
+	textFile.close()
+
+	return 0
 
 #############################
 # framePath = "D:\\BCIV\\Tarea2\\Imagenes\\prisma.dcc.uchile.cl\\CC5204\\Pascal_VOC_2007\\imagenes\\dog_train"
@@ -249,5 +275,9 @@ def parse_the_thing():
     parseAsSVMTrain(sofaDescriptors, "sofaDescTrain.txt")
 
 #calcCentroids(newFramePath)
-calcBOVW2("clusters101.p", newFramePath)
+#calcBOVW2("clusters101.p", newFramePath)
 #calcBOVW("clusters101.p", newFramePath + "\\sofas")
+sofaDescriptors = loadFromFile("sofaBOVW101.p")
+nosofaDescriptors = loadFromFile("no_sofaBOVW101.p")
+
+parseAsSVMTrainMulticlass(sofaDescriptors, nosofaDescriptors, "sofaTrainMC.txt")
